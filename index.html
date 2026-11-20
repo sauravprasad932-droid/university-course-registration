@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex University - Academic Portal & Course Registration System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#312e81',
+            },
+            dark: {
+              bg: '#080c14',
+              surface: '#0f172a',
+              card: '#131e33',
+              cardHover: '#182642',
+              border: '#1e2d4a',
+              borderLight: '#2a3d63',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #080c14; }
+    .custom-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #1e2d4a; border-radius: 6px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: #33476f; }
+    @keyframes toastSlide {
+      0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+      15% { opacity: 1; transform: translateY(0) scale(1); }
+      85% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-20px) scale(0.95); }
+    }
+    .toast-animate { animation: toastSlide 3.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .glass-panel { background: rgba(19, 30, 51, 0.75); backdrop-filter: blur(12px); }
+  </style>
+</head>
+<body class="text-slate-100 antialiased min-h-screen flex flex-col justify-between selection:bg-brand-500 selection:text-white">
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="bg-dark-surface/90 border-b border-dark-border sticky top-0 z-40 backdrop-blur-md px-4 lg:px-6 py-2.5">
+    <div class="max-w-[1700px] mx-auto flex items-center justify-between gap-4">
+      
+      <!-- Logo & University Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-brand-500/25 ring-1 ring-white/20">
+          A
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-sm md:text-base tracking-tight text-white leading-tight">APEX UNIVERSITY</h1>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">ENTERPRISE ERP</span>
+          </div>
+          <p class="text-[11px] text-slate-400 font-medium">Academic Portal & Course Management System</p>
+        </div>
+      </div>
+
+      <!-- Center Search Bar (Real-Time Live Filter) -->
+      <div class="hidden md:flex items-center flex-1 max-w-md mx-4">
+        <div class="relative w-full">
+          <input type="text" id="global-search" oninput="handleGlobalSearch(this.value)" placeholder="Search courses, instructors, codes, room..." class="w-full bg-dark-card border border-dark-border rounded-xl pl-9 pr-4 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition shadow-inner font-medium" />
+          <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+      </div>
+
+      <!-- User Profile & Quick Role Switcher -->
+      <div class="flex items-center gap-2.5">
+        
+        <!-- Live Quick-Switch Pills -->
+        <div class="hidden sm:flex items-center bg-dark-bg border border-dark-border rounded-xl p-1 gap-1">
+          <span class="text-[11px] text-slate-400 font-semibold px-2">Role:</span>
+          <button onclick="switchUser('S001')" id="btn-user-S001" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-brand-600 text-white shadow-sm">Rahul (Student)</button>
+          <button onclick="switchUser('S002')" id="btn-user-S002" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">Priya (Student)</button>
+          <button onclick="switchUser('P001')" id="btn-user-P001" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">Dr. Amit (Prof)</button>
+          <button onclick="switchUser('A001')" id="btn-user-A001" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">Administrator</button>
+        </div>
+
+        <!-- Notification Bell with Count -->
+        <div class="relative">
+          <button onclick="openNotificationsModal()" class="w-9 h-9 rounded-xl bg-dark-card border border-dark-border hover:border-dark-borderLight text-slate-300 hover:text-white flex items-center justify-center transition relative">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+            <span id="notif-badge" class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white font-mono text-[9px] flex items-center justify-center font-bold">2</span>
+          </button>
+        </div>
+
+        <!-- Backup & Reset Controls -->
+        <button onclick="exportDataJson()" title="Download JSON Backup" class="w-9 h-9 rounded-xl bg-dark-card border border-dark-border hover:border-brand-500 text-slate-400 hover:text-brand-500 flex items-center justify-center transition text-xs font-mono">
+          💾
+        </button>
+        <button onclick="resetSystemData()" title="Reset to default seed data" class="w-9 h-9 rounded-xl bg-dark-card border border-dark-border hover:border-rose-500 text-slate-400 hover:text-rose-400 flex items-center justify-center transition text-xs">
+          ↺
+        </button>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================= SUB-HEADER: CONTEXT BAR ================= -->
+  <div class="bg-dark-surface/60 border-b border-dark-border px-4 lg:px-6 py-2">
+    <div class="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+      
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-400">Authenticated:</span>
+          <span class="font-bold text-white text-sm" id="header-user-name">Rahul Sharma</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-500/10 text-brand-500 border border-brand-500/20" id="header-user-role">Student</span>
+        </div>
+        <span class="text-slate-600 hidden sm:inline">•</span>
+        <span class="text-slate-400 hidden sm:inline font-mono" id="header-user-meta">ID: S001 | Regular Full-Time</span>
+      </div>
+
+      <!-- Quick Metrics Ribbon -->
+      <div class="flex items-center gap-4 text-xs font-medium" id="header-stats-ribbon">
+        <!-- Dynamically injected -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================= MAIN LAYOUT WITH SIDEBAR ================= -->
+  <div class="max-w-[1700px] mx-auto w-full flex-1 flex flex-col md:flex-row gap-4 p-4 lg:p-6">
+    
+    <!-- LEFT SIDEBAR NAVIGATION -->
+    <aside class="w-full md:w-64 shrink-0 space-y-4">
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-3 shadow-md space-y-1">
+        <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider px-3 py-1.5" id="nav-group-label">Student Services</div>
+        <nav class="space-y-1" id="sidebar-nav">
+          <!-- Dynamic sidebar links based on role -->
+        </nav>
+      </div>
+
+      <!-- Quick Summary Card -->
+      <div class="bg-dark-card border border-dark-border rounded-2xl p-4 space-y-3 shadow-md" id="sidebar-context-card">
+        <!-- Dynamic role summary card -->
+      </div>
+    </aside>
+
+    <!-- RIGHT MAIN CONTENT VIEWPORT -->
+    <main class="flex-1 min-w-0 space-y-4">
+      <div id="main-view-container" class="space-y-4">
+        <!-- Active View Injected Here -->
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ================= DEVELOPER & ARCHITECTURE LOG FOOTER ================= -->
+  <footer class="bg-dark-surface border-t border-dark-border text-xs sticky bottom-0 z-30">
+    <div class="max-w-[1700px] mx-auto px-4 lg:px-6 py-2 flex items-center justify-between">
+      <div class="flex items-center gap-3 font-mono text-[11px] text-slate-400">
+        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Live JVM Object Graph</span>
+        <span class="hidden sm:inline text-slate-600">•</span>
+        <span class="hidden sm:inline">Active Storage: <strong class="text-slate-200">localStorage (university.dat)</strong></span>
+        <span class="hidden sm:inline text-slate-600">•</span>
+        <span class="hidden md:inline text-brand-500 font-bold">4-Tier N-Layered Architecture</span>
+      </div>
+      <button onclick="toggleDevConsole()" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-dark-card border border-dark-border hover:border-brand-500 text-slate-300 hover:text-white transition font-mono text-[11px]">
+        <span>⚡ Java Runtime Execution Log</span>
+        <span id="dev-console-icon">▲</span>
+      </button>
+    </div>
+
+    <!-- Collapsible Execution Log Drawer -->
+    <div id="dev-console" class="hidden border-t border-dark-border bg-[#05080e] p-3 font-mono text-[11px] max-h-52 overflow-y-auto custom-scroll space-y-1">
+      <div class="text-slate-500">// Real-time Java method calls, constraint checks, and database mutations are recorded here:</div>
+    </div>
+  </footer>
+
+  <!-- ================= TOASTS CONTAINER ================= -->
+  <div id="toast-wrapper" class="fixed bottom-14 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+  <!-- ================= MODAL DIALOG BACKDROP ================= -->
+  <div id="modal-wrapper" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div id="modal-content" class="bg-dark-card border border-dark-border rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto custom-scroll">
+      <!-- Modal body injected dynamically -->
+    </div>
+  </div>
+
+  <!-- ================= MASTER ENGINE & LOGIC SCRIPT ================= -->
+  <script>
+    // ================= INITIAL PRODUCTION DATASET =================
+    const BASE_DATABASE = {
+      users: [
+        { id: "A001", name: "Dr. Evelyn Reed", email: "admin@university.com", role: "Administrator", title: "Dean of Academic Affairs" },
+        { id: "P001", name: "Prof. Amit Sharma", email: "amit@university.com", role: "Professor", department: "Computer Science", expertise: "Algorithms & Java", office: "Tech Hall 402", officeHours: "Mon/Wed 2-4 PM" },
+        { id: "P002", name: "Prof. Neha Verma", email: "neha@university.com", role: "Professor", department: "Computer Science", expertise: "Data Systems", office: "Tech Hall 415", officeHours: "Tue/Thu 1-3 PM" },
+        { id: "P003", name: "Dr. Robert Vance", email: "robert@university.com", role: "Professor", department: "Mathematics", expertise: "Discrete Structures", office: "Science Block 204", officeHours: "Fri 10-12 PM" },
+        { id: "S001", name: "Rahul Sharma", email: "rahul@university.com", role: "Student", semester: 1, major: "Computer Science & Engineering", completedCourses: [], standing: "Good Standing" },
+        { id: "S002", name: "Priya Patel", email: "priya@university.com", role: "Student", semester: 1, major: "Information Technology", completedCourses: [], standing: "Dean's List" },
+        { id: "S003", name: "Rohit Kumar", email: "rohit@university.com", role: "Student", semester: 1, major: "Computer Science & Engineering", completedCourses: [], standing: "Good Standing" },
+        { id: "S004", name: "Ananya Iyer", email: "ananya@university.com", role: "Student", semester: 2, major: "Computer Science", completedCourses: ["CSE101", "CSE102"], standing: "Honors" }
+      ],
+      courses: [
+        { code: "CSE101", title: "Introduction to Programming & Problem Solving", credits: 4, semester: 1, timing: "Mon 9:00 - 10:00 AM", location: "Auditorium 1", limit: 60, professorId: "P001", department: "CSE", prerequisites: [], syllabus: "Primitive types, flow of control, arrays, object references, method overloading, encapsulation and basic I/O." },
+        { code: "CSE102", title: "Discrete Mathematical Structures", credits: 4, semester: 1, timing: "Tue 10:00 - 11:00 AM", location: "Hall 201", limit: 60, professorId: "P003", department: "Math", prerequisites: [], syllabus: "Propositional logic, set theory, functions, relations, mathematical induction, and basic graph theory." },
+        { code: "CSE103", title: "Engineering Physics & Semiconductor Devices", credits: 4, semester: 1, timing: "Wed 11:00 - 12:00 PM", location: "Lab Complex 3", limit: 60, professorId: "P002", department: "Physics", prerequisites: [], syllabus: "Quantum mechanics fundamentals, band theory of solids, semiconductor diodes, lasers, and fiber optics." },
+        { code: "CSE201", title: "Data Structures & Algorithm Analysis", credits: 4, semester: 2, timing: "Thu 9:00 - 10:00 AM", location: "Tech Hall 105", limit: 50, professorId: "P002", department: "CSE", prerequisites: ["CSE101"], syllabus: "Stacks, queues, balanced search trees, heaps, hash tables, asymptotic notation, and graph traversals (BFS/DFS)." },
+        { code: "CSE202", title: "Object-Oriented Design & Design Patterns", credits: 4, semester: 2, timing: "Fri 10:00 - 11:00 AM", location: "Tech Hall 108", limit: 50, professorId: "P001", department: "CSE", prerequisites: ["CSE101"], syllabus: "Polymorphism, abstract base classes, interfaces, SOLID design principles, Singleton, Factory, and Observer patterns." },
+        { code: "MTH201", title: "Linear Algebra & Computational Numerical Analysis", credits: 2, semester: 2, timing: "Mon 2:00 - 3:00 PM", location: "Science Hall 302", limit: 45, professorId: "P003", department: "Math", prerequisites: ["CSE102"], syllabus: "Vector spaces, linear transformations, eigenvalues and eigenvectors, singular value decomposition." },
+        { code: "CSE301", title: "Database Management Systems & Distributed Storage", credits: 4, semester: 3, timing: "Wed 2:00 - 3:00 PM", location: "Tech Hall 202", limit: 55, professorId: "P002", department: "CSE", prerequisites: ["CSE201"], syllabus: "Relational algebra, SQL, normalization, concurrency control, transaction isolation, ACID properties." }
+      ],
+      enrollments: [
+        { id: "E1001", studentId: "S001", courseCode: "CSE101", active: true, grade: null, timestamp: "2026-11-20 09:30" },
+        { id: "E1002", studentId: "S004", courseCode: "CSE201", active: true, grade: { letter: "A", points: 9.0 }, timestamp: "2026-11-19 14:15" },
+        { id: "E1003", studentId: "S004", courseCode: "CSE202", active: true, grade: { letter: "A+", points: 10.0 }, timestamp: "2026-11-19 14:16" }
+      ],
+      complaints: [
+        { id: "TICK-401", studentId: "S001", category: "Timetable Clash", title: "Physics Lab Overlap with CSE101 Discussion", description: "The Wednesday physics session timing creates an overlap with the programming lab office hours.", status: "PENDING", date: "2026-11-20", priority: "HIGH", resolution: "" },
+        { id: "TICK-389", studentId: "S002", category: "Course Materials", title: "Access Request for CSE102 Lecture Notes", description: "Requested digital textbook repository access for the discrete math section.", status: "RESOLVED", date: "2026-11-18", priority: "NORMAL", resolution: "Digital library credentials re-issued and verified." }
+      ],
+      notifications: [
+        { id: 1, title: "Semester 1 Registration Window Open", time: "10 mins ago", unread: true },
+        { id: 2, title: "Prof. Amit posted CSE101 Syllabus updates", time: "1 hour ago", unread: true }
+      ]
+    };
+
+    // ================= APP STATE ENGINE =================
+    let APP_STATE = initStorage();
+    let currentUserId = "S001";
+    let activeTab = "student_dashboard";
+    let searchQuery = "";
+
+    function initStorage() {
+      const saved = localStorage.getItem("APEX_UNIV_STORAGE_V2");
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) { console.error("Corrupt state, re-seeding", e); }
+      }
+      return JSON.parse(JSON.stringify(BASE_DATABASE));
+    }
+
+    function commitState(logAction = "") {
+      localStorage.setItem("APEX_UNIV_STORAGE_V2", JSON.stringify(APP_STATE));
+      if (logAction) logDevEvent(logAction);
+    }
+
+    function resetSystemData() {
+      if (confirm("Reset the entire university database back to initial factory demonstration state? All custom registrations, grades, and tickets will reset.")) {
+        APP_STATE = JSON.parse(JSON.stringify(BASE_DATABASE));
+        commitState("[RESET] Database restored to initial seed state via DataStorageService.loadData()");
+        switchUser("S001");
+        notifyToast("Database factory reset complete!", "info");
+      }
+    }
+
+    function exportDataJson() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(APP_STATE, null, 2));
+      const downloadAnchor = document.createElement("a");
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "apex_university_database.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      notifyToast("Database snapshot exported successfully as JSON!", "success");
+      logDevEvent("[EXPORT] Serialized state exported to JSON file.");
+    }
+
+    function logDevEvent(message) {
+      const consoleBox = document.getElementById("dev-console");
+      const row = document.createElement("div");
+      const time = new Date().toLocaleTimeString();
+      row.className = "flex items-start gap-2 text-slate-300";
+      row.innerHTML = `<span class="text-slate-500">[${time}]</span> <span class="text-brand-500 font-bold font-mono">JVM:</span> <span>${message}</span>`;
+      consoleBox.appendChild(row);
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+    }
+
+    function toggleDevConsole() {
+      const box = document.getElementById("dev-console");
+      const icon = document.getElementById("dev-console-icon");
+      if (box.classList.contains("hidden")) {
+        box.classList.remove("hidden");
+        icon.textContent = "▼";
+      } else {
+        box.classList.add("hidden");
+        icon.textContent = "▲";
+      }
+    }
+
+    function notifyToast(text, type = "success") {
+      const wrapper = document.getElementById("toast-wrapper");
+      const toast = document.createElement("div");
+      const styles = {
+        success: "bg-emerald-600/95 border-emerald-400 text-white shadow-emerald-950/50",
+        error: "bg-rose-600/95 border-rose-400 text-white shadow-rose-950/50",
+        info: "bg-brand-600/95 border-brand-400 text-white shadow-brand-950/50",
+        warn: "bg-amber-600/95 border-amber-400 text-white shadow-amber-950/50"
+      };
+      const icons = { success: "✓", error: "✕", info: "ℹ", warn: "⚠" };
+      toast.className = `${styles[type]} border px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 text-xs font-semibold toast-animate pointer-events-auto`;
+      toast.innerHTML = `<span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs">${icons[type]}</span><span>${text}</span>`;
+      wrapper.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    // ================= USER SESSION MANAGEMENT =================
+    function getActiveUser() {
+      return APP_STATE.users.find(u => u.id === currentUserId) || APP_STATE.users[0];
+    }
+
+    function switchUser(userId) {
+      currentUserId = userId;
+      const user = getActiveUser();
+
+      // Update pills
+      ['S001', 'S002', 'P001', 'A001'].forEach(id => {
+        const btn = document.getElementById(`btn-user-${id}`);
+        if (btn) {
+          if (id === userId) {
+            btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold transition bg-brand-600 text-white shadow-sm";
+          } else {
+            btn.className = "px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
+          }
+        }
+      });
+
+      // Default active tab based on role
+      if (user.role === "Student") activeTab = "student_dashboard";
+      else if (user.role === "Professor") activeTab = "prof_dashboard";
+      else if (user.role === "Administrator") activeTab = "admin_dashboard";
+
+      logDevEvent(`[AUTHENTICATION] Switched context to user <strong>${user.name}</strong> (${user.role}, ID: ${user.id})`);
+      renderHeaderRibbon();
+      renderSidebar();
+      renderMainView();
+    }
+
+    function renderHeaderRibbon() {
+      const user = getActiveUser();
+      document.getElementById("header-user-name").textContent = user.name;
+      document.getElementById("header-user-role").textContent = user.role;
+
+      const metaEl = document.getElementById("header-user-meta");
+      const ribbon = document.getElementById("header-stats-ribbon");
+
+      if (user.role === "Student") {
+        metaEl.textContent = `ID: ${user.id} | ${user.major} | Sem ${user.semester}`;
+        
+        const myActive = APP_STATE.enrollments.filter(e => e.studentId === user.id && e.active);
+        const credits = myActive.reduce((sum, e) => {
+          const c = APP_STATE.courses.find(item => item.code === e.courseCode);
+          return sum + (c ? c.credits : 0);
+        }, 0);
+
+        const gpaData = calculateGPA(user.id, user.semester);
+
+        ribbon.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-slate-400">Semester Credits:</span>
+            <div class="w-20 bg-dark-bg rounded-full h-2 border border-dark-border overflow-hidden">
+              <div class="bg-brand-500 h-2 rounded-full" style="width: ${(credits/20)*100}%"></div>
+            </div>
+            <span class="font-mono font-bold ${credits > 16 ? 'text-amber-400' : 'text-brand-500'}">${credits} / 20</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-slate-400">Current SGPA:</span>
+            <span class="font-mono font-bold text-emerald-400">${gpaData.sgpa >= 0 ? gpaData.sgpa.toFixed(2) : 'In Progress'}</span>
+          </div>
+        `;
+      } else if (user.role === "Professor") {
+        metaEl.textContent = `${user.department} Faculty | ${user.office}`;
+        const myCourses = APP_STATE.courses.filter(c => c.professorId === user.id);
+        const myStudentsCount = APP_STATE.enrollments.filter(e => myCourses.some(c => c.code === e.courseCode) && e.active).length;
+
+        ribbon.innerHTML = `
+          <span class="text-slate-400">Assigned Sections: <strong class="text-brand-500 font-mono">${myCourses.length}</strong></span>
+          <span class="text-slate-400">Total Enrolled Students: <strong class="text-emerald-400 font-mono">${myStudentsCount}</strong></span>
+        `;
+      } else {
+        metaEl.textContent = `${user.title} (${user.id})`;
+        const openComplaints = APP_STATE.complaints.filter(c => c.status === "PENDING").length;
+
+        ribbon.innerHTML = `
+          <span class="text-slate-400">Total Courses: <strong class="text-brand-500 font-mono">${APP_STATE.courses.length}</strong></span>
+          <span class="text-slate-400">Open Tickets: <strong class="text-rose-400 font-mono">${openComplaints}</strong></span>
+        `;
+      }
+    }
+
+    function renderSidebar() {
+      const user = getActiveUser();
+      const navGroupLabel = document.getElementById("nav-group-label");
+      const nav = document.getElementById("sidebar-nav");
+      const summaryCard = document.getElementById("sidebar-context-card");
+
+      nav.innerHTML = "";
+
+      let navItems = [];
+      if (user.role === "Student") {
+        navGroupLabel.textContent = "Student Self-Service";
+        navItems = [
+          { id: "student_dashboard", label: "Dashboard Overview", icon: "📊" },
+          { id: "student_catalog", label: "Course Registration", icon: "📚", badge: "Live" },
+          { id: "student_enrollments", label: "My Registrations", icon: "📝" },
+          { id: "student_timetable", label: "Weekly Schedule", icon: "📅" },
+          { id: "student_gpa", label: "Transcripts & GPA", icon: "🎓" },
+          { id: "student_complaints", label: "Grievance Desk", icon: "⚠️" }
+        ];
+
+        const myActive = APP_STATE.enrollments.filter(e => e.studentId === user.id && e.active);
+        summaryCard.innerHTML = `
+          <div class="flex items-center justify-between pb-2 border-b border-dark-border">
+            <span class="font-bold text-xs text-white">Enrollment Status</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400">Active</span>
+          </div>
+          <div class="space-y-1.5 text-xs text-slate-300">
+            <div class="flex justify-between"><span class="text-slate-400">Current Semester:</span> <span class="font-bold text-white">Semester ${user.semester}</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Registered Units:</span> <span class="font-mono font-bold text-brand-500">${myActive.length} Courses</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Prereqs Passed:</span> <span class="font-mono text-cyan-400">${user.completedCourses.length} Passed</span></div>
+          </div>
+        `;
+      } else if (user.role === "Professor") {
+        navGroupLabel.textContent = "Faculty Instruction";
+        navItems = [
+          { id: "prof_dashboard", label: "Faculty Dashboard", icon: "👨‍🏫" },
+          { id: "prof_gradebook", label: "Gradebook & Students", icon: "📑", badge: "Grading" },
+          { id: "prof_curriculum", label: "Course Management", icon: "⚙️" }
+        ];
+
+        const myCourses = APP_STATE.courses.filter(c => c.professorId === user.id);
+        summaryCard.innerHTML = `
+          <div class="font-bold text-xs text-white pb-1.5 border-b border-dark-border">Instructor Profile</div>
+          <div class="space-y-1 text-xs text-slate-300">
+            <div>Office: <strong>${user.office}</strong></div>
+            <div>Hours: <strong>${user.officeHours}</strong></div>
+            <div>Sections: <strong class="text-brand-500 font-mono">${myCourses.map(c => c.code).join(', ')}</strong></div>
+          </div>
+        `;
+      } else {
+        navGroupLabel.textContent = "Campus Administration";
+        navItems = [
+          { id: "admin_dashboard", label: "Admin Analytics", icon: "🏛️" },
+          { id: "admin_catalog", label: "Curriculum Manager", icon: "📖" },
+          { id: "admin_students", label: "Student Registry", icon: "👥" },
+          { id: "admin_complaints", label: "Grievances & SLA", icon: "📋" },
+          { id: "admin_promotion", label: "Semester Promotion", icon: "🚀", badge: "Action" }
+        ];
+
+        summaryCard.innerHTML = `
+          <div class="font-bold text-xs text-white pb-1.5 border-b border-dark-border">System Health</div>
+          <div class="space-y-1.5 text-xs text-slate-300">
+            <div class="flex justify-between"><span class="text-slate-400">Database Engine:</span> <span class="text-emerald-400 font-mono">Serializable</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Enrolled Headcount:</span> <span class="font-bold text-white font-mono">${APP_STATE.enrollments.filter(e => e.active).length}</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">Total Catalog:</span> <span class="font-mono text-indigo-400">${APP_STATE.courses.length} Units</span></div>
+          </div>
+        `;
+      }
+
+      navItems.forEach(item => {
+        const btn = document.createElement("button");
+        const isActive = activeTab === item.id;
+        btn.className = `w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition ${
+          isActive 
+            ? 'bg-brand-600 text-white shadow-md shadow-brand-500/25 ring-1 ring-white/10' 
+            : 'text-slate-400 hover:text-white hover:bg-dark-cardHover'
+        }`;
+        btn.onclick = () => {
+          activeTab = item.id;
+          renderSidebar();
+          renderMainView();
+        };
+
+        btn.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <span class="text-sm">${item.icon}</span>
+            <span>${item.label}</span>
+          </div>
+          ${item.badge ? `<span class="px-1.5 py-0.2 rounded-md text-[9px] font-bold uppercase tracking-wider ${isActive ? 'bg-white/20 text-white' : 'bg-brand-500/10 text-brand-500'}">${item.badge}</span>` : ''}
+        `;
+        nav.appendChild(btn);
+      });
+    }
+
+    // ================= MAIN VIEW DISPATCHER =================
+    function renderMainView() {
+      const container = document.getElementById("main-view-container");
+      container.innerHTML = "";
+
+      const user = getActiveUser();
+
+      if (user.role === "Student") {
+        if (activeTab === "student_dashboard") viewStudentDashboard(container, user);
+        else if (activeTab === "student_catalog") viewStudentCatalog(container, user);
+        else if (activeTab === "student_enrollments") viewStudentEnrollments(container, user);
+        else if (activeTab === "student_timetable") viewStudentTimetable(container, user);
+        else if (activeTab === "student_gpa") viewStudentGPA(container, user);
+        else if (activeTab === "student_complaints") viewStudentComplaints(container, user);
+      } else if (user.role === "Professor") {
+        if (activeTab === "prof_dashboard") viewProfessorDashboard(container, user);
+        else if (activeTab === "prof_gradebook") viewProfessorGradebook(container, user);
+        else if (activeTab === "prof_curriculum") viewProfessorCurriculum(container, user);
+      } else {
+        if (activeTab === "admin_dashboard") viewAdminDashboard(container, user);
+        else if (activeTab === "admin_catalog") viewAdminCatalog(container, user);
+        else if (activeTab === "admin_students") viewAdminStudents(container, user);
+        else if (activeTab === "admin_complaints") viewAdminComplaints(container, user);
+        else if (activeTab === "admin_promotion") viewAdminPromotion(container, user);
+      }
+    }
+
+    function handleGlobalSearch(query) {
+      searchQuery = query.toLowerCase().trim();
+      renderMainView();
+    }
+
+    // ================= 1. STUDENT VIEW IMPLEMENTATIONS =================
+
+    function viewStudentDashboard(container, user) {
+      const myEnrollments = APP_STATE.enrollments.filter(e => e.studentId === user.id && e.active);
+      const activeCredits = myEnrollments.reduce((sum, e) => {
+        const c = APP_STATE.courses.find(item => item.code === e.courseCode);
+        return sum + (c ? c.credits : 0);
+      }, 0);
+      const gpaData = calculateGPA(user.id, user.semester);
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <!-- Welcome Hero Banner -->
+          <div class="bg-gradient-to-r from-brand-900/60 via-dark-card to-dark-card border border-brand-500/30 rounded-3xl p-6 relative overflow-hidden shadow-xl">
+            <div class="relative z-10 space-y-2 max-w-2xl">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-500/20 text-brand-300 border border-brand-500/30">Academic Session 2026-27</span>
+              <h2 class="text-2xl md:text-3xl font-extrabold text-white tracking-tight">Welcome back, ${user.name}!</h2>
+              <p class="text-slate-300 text-xs md:text-sm leading-relaxed">You are actively registered in Semester ${user.semester}. All course prerequisite validations, timetable clash protections, and GPA audits are synchronized.</p>
+              <div class="flex items-center gap-3 pt-2">
+                <button onclick="activeTab='student_catalog'; renderSidebar(); renderMainView();" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-lg shadow-brand-500/30 transition flex items-center gap-2">
+                  <span>Browse Available Courses</span>
+                  <span>➔</span>
+                </button>
+                <button onclick="activeTab='student_timetable'; renderSidebar(); renderMainView();" class="px-4 py-2 rounded-xl bg-dark-surface hover:bg-dark-border text-slate-300 hover:text-white font-semibold text-xs border border-dark-border transition">
+                  View Timetable
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Performance Cards Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-4.5 space-y-2 hover:border-brand-500/40 transition">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 text-xs font-semibold">Active Registrations</span>
+                <span class="w-8 h-8 rounded-xl bg-brand-500/10 text-brand-500 flex items-center justify-center font-bold text-sm">📚</span>
+              </div>
+              <div class="text-2xl font-black font-mono text-white">${myEnrollments.length} Units</div>
+              <div class="text-[11px] text-slate-400">Enrolled for current term</div>
+            </div>
+
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-4.5 space-y-2 hover:border-brand-500/40 transition">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 text-xs font-semibold">Credit Load Meter</span>
+                <span class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold text-sm">⚖️</span>
+              </div>
+              <div class="text-2xl font-black font-mono text-amber-400">${activeCredits} / 20</div>
+              <div class="w-full bg-dark-bg rounded-full h-1.5 overflow-hidden">
+                <div class="bg-amber-400 h-1.5 rounded-full" style="width: ${(activeCredits/20)*100}%"></div>
+              </div>
+              <div class="text-[11px] text-slate-400">Max limit enforced: 20 credits</div>
+            </div>
+
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-4.5 space-y-2 hover:border-brand-500/40 transition">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 text-xs font-semibold">Semester SGPA</span>
+                <span class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-sm">📈</span>
+              </div>
+              <div class="text-2xl font-black font-mono ${gpaData.sgpa >= 0 ? 'text-emerald-400' : 'text-slate-500'}">
+                ${gpaData.sgpa >= 0 ? gpaData.sgpa.toFixed(2) : 'Awaiting Grades'}
+              </div>
+              <div class="text-[11px] text-slate-400">Scale: 10.0 Maximum</div>
+            </div>
+
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-4.5 space-y-2 hover:border-brand-500/40 transition">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400 text-xs font-semibold">Completed Prereqs</span>
+                <span class="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center font-bold text-sm">🛡️</span>
+              </div>
+              <div class="text-2xl font-black font-mono text-cyan-400">${user.completedCourses.length} Passed</div>
+              <div class="text-[11px] text-slate-400 truncate">${user.completedCourses.join(', ') || 'Initial Semester'}</div>
+            </div>
+
+          </div>
+
+          <!-- Active Courses Quick Table -->
+          <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-extrabold text-sm text-white">Your Current Course Schedule</h3>
+                <p class="text-slate-400 text-xs">Classes currently active on your university record.</p>
+              </div>
+              <button onclick="activeTab='student_enrollments'; renderSidebar(); renderMainView();" class="text-xs text-brand-500 font-bold hover:underline">Manage Enrollments ➔</button>
+            </div>
+
+            <div class="space-y-2">
+              ${myEnrollments.map(e => {
+                const c = APP_STATE.courses.find(course => course.code === e.courseCode);
+                const prof = APP_STATE.users.find(u => u.id === (c ? c.professorId : null));
+                return `
+                  <div class="flex flex-wrap items-center justify-between p-3.5 rounded-xl bg-dark-surface border border-dark-border hover:border-dark-borderLight transition gap-3">
+                    <div class="flex items-center gap-3">
+                      <span class="w-10 h-10 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-400 font-mono font-bold text-xs flex items-center justify-center">${e.courseCode}</span>
+                      <div>
+                        <h4 class="font-bold text-sm text-white">${c ? c.title : 'Course'}</h4>
+                        <div class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+                          <span>👨‍🏫 ${prof ? prof.name : 'Unassigned'}</span>
+                          <span>•</span>
+                          <span>⏰ ${c ? c.timing : ''} (${c ? c.location : ''})</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <span class="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">${c ? c.credits : 0} Credits</span>
+                      ${e.grade ? `
+                        <span class="px-3 py-1 rounded-lg font-mono font-bold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Grade: ${e.grade.letter} (${e.grade.points} pts)</span>
+                      ` : `
+                        <span class="px-3 py-1 rounded-lg text-xs font-mono text-slate-400 bg-dark-bg border border-dark-border">In Progress</span>
+                      `}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+              ${myEnrollments.length === 0 ? '<div class="text-center py-6 text-slate-500 text-xs italic">No enrolled courses yet. Register using the Course Registration tab.</div>' : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function viewStudentCatalog(container, user) {
+      let catalog = APP_STATE.courses.filter(c => c.semester === user.semester);
+      if (searchQuery) {
+        catalog = catalog.filter(c => 
+          c.title.toLowerCase().includes(searchQuery) || 
+          c.code.toLowerCase().includes(searchQuery) ||
+          c.department.toLowerCase().includes(searchQuery)
+        );
+      }
+
+      const enrolledCodes = APP_STATE.enrollments
+        .filter(e => e.studentId === user.id && e.active)
+        .map(e => e.courseCode);
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 class="text-xl font-extrabold text-white">Semester ${user.semester} Course Catalog</h2>
+              <p class="text-slate-400 text-xs">Select courses to register. All 6 automated safety checks (Prereqs, Credits, Limits, Clashes) execute instantly.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-brand-500 bg-brand-500/10 px-3 py-1 rounded-lg border border-brand-500/20">${catalog.length} Available Courses</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${catalog.map(c => {
+              const isEnrolled = enrolledCodes.includes(c.code);
+              const prof = APP_STATE.users.find(u => u.id === c.professorId);
+              const enrolledCount = APP_STATE.enrollments.filter(e => e.courseCode === c.code && e.active).length;
+              const seatsLeft = c.limit - enrolledCount;
+              const hasPrereq = c.prerequisites.every(p => user.completedCourses.includes(p));
+
+              return `
+                <div class="bg-dark-card border ${isEnrolled ? 'border-emerald-500/50 shadow-emerald-950/30' : 'border-dark-border'} rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-brand-500/50 transition-all shadow-md">
+                  <div class="space-y-3">
+                    <div class="flex items-start justify-between gap-2">
+                      <div>
+                        <span class="font-mono text-xs font-bold text-brand-500 bg-brand-500/10 px-2.5 py-0.5 rounded-md border border-brand-500/20">${c.code}</span>
+                        <h3 class="font-extrabold text-base text-white mt-1.5 leading-snug">${c.title}</h3>
+                      </div>
+                      <span class="text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">${c.credits} Credits</span>
+                    </div>
+
+                    <p class="text-slate-400 text-xs leading-relaxed line-clamp-2">${c.syllabus}</p>
+
+                    <div class="space-y-1.5 text-xs text-slate-300 pt-2 border-t border-dark-border">
+                      <div class="flex items-center justify-between">
+                        <span class="text-slate-500">Instructor:</span>
+                        <span class="font-medium text-slate-200">${prof ? prof.name : 'Unassigned'}</span>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-slate-500">Classroom & Timing:</span>
+                        <span class="font-medium text-slate-200">${c.timing} (${c.location})</span>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-slate-500">Seat Capacity:</span>
+                        <span class="font-mono font-medium ${seatsLeft <= 5 ? 'text-rose-400' : 'text-emerald-400'}">${enrolledCount} / ${c.limit} (${seatsLeft} left)</span>
+                      </div>
+                      ${c.prerequisites.length > 0 ? `
+                        <div class="flex items-center justify-between">
+                          <span class="text-slate-500">Prerequisites:</span>
+                          <span class="font-mono text-[11px] ${hasPrereq ? 'text-emerald-400' : 'text-rose-400 font-bold'}">
+                            ${c.prerequisites.join(', ')} (${hasPrereq ? '✓ Passed' : '✕ Missing'})
+                          </span>
+                        </div>
+                      ` : ''}
+                    </div>
+                  </div>
+
+                  <div class="pt-3 border-t border-dark-border flex items-center justify-between gap-2">
+                    ${isEnrolled ? `
+                      <div class="w-full flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                          Enrolled
+                        </span>
+                        <button onclick="handleDropAction('${c.code}')" class="px-3.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-400 border border-rose-500/30 text-xs font-bold transition">Drop</button>
+                      </div>
+                    ` : `
+                      <button onclick="handleRegisterAction('${c.code}')" class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold transition shadow-lg shadow-brand-500/25 flex items-center justify-center gap-2">
+                        <span>Register Course</span>
+                        <span>➔</span>
+                      </button>
+                    `}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function viewStudentEnrollments(container, user) {
+      const myEnrollments = APP_STATE.enrollments.filter(e => e.studentId === user.id && e.active);
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-extrabold text-white">Registered Courses & Drop Desk</h2>
+              <p class="text-slate-400 text-xs">Review your confirmed courses for Semester ${user.semester}. Dropping immediately refunds credit capacity.</p>
+            </div>
+            <span class="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/20">${myEnrollments.length} Active Records</span>
+          </div>
+
+          <div class="bg-dark-card border border-dark-border rounded-2xl overflow-hidden shadow-md">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-dark-surface text-slate-400 border-b border-dark-border uppercase font-bold text-[10px] tracking-wider">
+                <tr>
+                  <th class="p-4">Code</th>
+                  <th class="p-4">Course Title</th>
+                  <th class="p-4">Credits</th>
+                  <th class="p-4">Schedule & Venue</th>
+                  <th class="p-4">Professor</th>
+                  <th class="p-4">Grade</th>
+                  <th class="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-dark-border">
+                ${myEnrollments.map(e => {
+                  const c = APP_STATE.courses.find(course => course.code === e.courseCode);
+                  const prof = APP_STATE.users.find(u => u.id === (c ? c.professorId : null));
+                  return `
+                    <tr class="hover:bg-dark-cardHover transition">
+                      <td class="p-4 font-mono font-bold text-brand-500">${e.courseCode}</td>
+                      <td class="p-4 font-bold text-white">${c ? c.title : 'Course'}</td>
+                      <td class="p-4 font-mono font-bold text-amber-400">${c ? c.credits : 0}</td>
+                      <td class="p-4 text-slate-300">${c ? `${c.timing} (${c.location})` : '-'}</td>
+                      <td class="p-4 text-slate-300">${prof ? prof.name : 'Unassigned'}</td>
+                      <td class="p-4">
+                        ${e.grade ? `
+                          <span class="px-2.5 py-1 rounded-lg font-mono font-bold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">${e.grade.letter} (${e.grade.points} pts)</span>
+                        ` : `
+                          <span class="px-2 py-0.5 rounded text-[10px] font-mono text-slate-400 bg-dark-bg border border-dark-border">In Progress</span>
+                        `}
+                      </td>
+                      <td class="p-4 text-right">
+                        <button onclick="handleDropAction('${e.courseCode}')" class="px-3.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-400 border border-rose-500/30 text-xs font-bold transition">Drop</button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+                ${myEnrollments.length === 0 ? `
+                  <tr><td colspan="7" class="p-8 text-center text-slate-500 text-xs italic">No active registrations. Visit the Course Registration catalog.</td></tr>
+                ` : ''}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function viewStudentTimetable(container, user) {
+      const myEnrollments = APP_STATE.enrollments.filter(e => e.studentId === user.id && e.active);
+      const courses = myEnrollments.map(e => APP_STATE.courses.find(c => c.code === e.courseCode)).filter(Boolean);
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Visual Weekly Timetable (Semester ${user.semester})</h2>
+            <p class="text-slate-400 text-xs">Calendar breakdown of all registered lecture blocks and lab venues.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-3.5">
+            ${['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(day => {
+              const dayCourses = courses.filter(c => c.timing.toLowerCase().includes(day.toLowerCase().slice(0, 3)));
+              return `
+                <div class="bg-dark-card border border-dark-border rounded-2xl p-4 flex flex-col space-y-3 shadow-md">
+                  <div class="flex items-center justify-between pb-2 border-b border-dark-border">
+                    <span class="font-extrabold text-xs text-brand-500 uppercase tracking-wider">${day}</span>
+                    <span class="text-[10px] text-slate-500 font-mono">${dayCourses.length} Lectures</span>
+                  </div>
+                  <div class="space-y-2 flex-1">
+                    ${dayCourses.length === 0 ? `
+                      <div class="text-[11px] text-slate-500 italic p-6 text-center">No classes scheduled</div>
+                    ` : dayCourses.map(c => `
+                      <div class="bg-dark-surface border border-brand-500/30 p-3 rounded-xl space-y-1.5 shadow-sm">
+                        <div class="flex items-center justify-between">
+                          <span class="font-mono text-[10px] font-bold text-brand-400">${c.code}</span>
+                          <span class="text-[9px] font-bold font-mono text-amber-400">${c.credits} Cr</span>
+                        </div>
+                        <div class="font-bold text-xs text-white leading-tight">${c.title}</div>
+                        <div class="text-[11px] text-slate-300">⏰ ${c.timing.split(' ').slice(1).join(' ')}</div>
+                        <div class="text-[10px] text-slate-400">📍 ${c.location}</div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function viewStudentGPA(container, user) {
+      const gpaData = calculateGPA(user.id, user.semester);
+      const myEnrollments = APP_STATE.enrollments.filter(e => e.studentId === user.id && e.active);
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Transcripts & GPA Simulator</h2>
+            <p class="text-slate-400 text-xs">Official GPA calculation based on active enrollment grade points and credits.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-1 shadow-md">
+              <span class="text-xs font-semibold text-slate-400">Current Semester SGPA</span>
+              <div class="text-3xl font-black font-mono ${gpaData.sgpa >= 0 ? 'text-emerald-400' : 'text-slate-500'}">
+                ${gpaData.sgpa >= 0 ? gpaData.sgpa.toFixed(2) : 'Pending Grades'}
+              </div>
+              <p class="text-[11px] text-slate-500">Formula: Σ(GradePoint × Credits) / Σ(Credits)</p>
+            </div>
+
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-1 shadow-md">
+              <span class="text-xs font-semibold text-slate-400">Cumulative CGPA</span>
+              <div class="text-3xl font-black font-mono ${gpaData.cgpa >= 0 ? 'text-indigo-400' : 'text-slate-500'}">
+                ${gpaData.cgpa >= 0 ? gpaData.cgpa.toFixed(2) : 'No Past Terms'}
+              </div>
+              <p class="text-[11px] text-slate-500">Overall academic progression</p>
+            </div>
+
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-1 shadow-md">
+              <span class="text-xs font-semibold text-slate-400">Completed Prerequisites</span>
+              <div class="text-3xl font-black font-mono text-cyan-400">${user.completedCourses.length} Units</div>
+              <p class="text-[11px] text-slate-500 truncate">${user.completedCourses.join(', ') || 'None completed yet'}</p>
+            </div>
+          </div>
+
+          <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-3 shadow-md">
+            <h3 class="font-extrabold text-sm text-white">Current Semester Gradebook Breakdown</h3>
+            <div class="space-y-2">
+              ${myEnrollments.map(e => {
+                const c = APP_STATE.courses.find(course => course.code === e.courseCode);
+                return `
+                  <div class="flex items-center justify-between p-3.5 rounded-xl bg-dark-surface border border-dark-border">
+                    <div>
+                      <span class="font-mono text-xs font-bold text-brand-500">${e.courseCode}</span>
+                      <span class="font-bold text-sm text-white ml-2.5">${c ? c.title : ''}</span>
+                      <span class="text-xs text-slate-400 ml-2">(${c ? c.credits : 0} Credits)</span>
+                    </div>
+                    <div>
+                      ${e.grade ? `
+                        <span class="px-3 py-1 rounded-lg font-mono font-bold text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Grade: ${e.grade.letter} (${e.grade.points} Points)</span>
+                      ` : `
+                        <span class="px-3 py-1 rounded-lg text-xs font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20">Pending Professor Evaluation</span>
+                      `}
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function viewStudentComplaints(container, user) {
+      const myTickets = APP_STATE.complaints.filter(c => c.studentId === user.id);
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-extrabold text-white">Student Grievance & Complaint Desk</h2>
+              <p class="text-slate-400 text-xs">File formal issues regarding schedule clashes, grading, or administrative discrepancies.</p>
+            </div>
+            <button onclick="openComplaintModal()" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-lg shadow-brand-500/30 transition">+ File Grievance Ticket</button>
+          </div>
+
+          <div class="space-y-3">
+            ${myTickets.map(c => `
+              <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-3 shadow-md">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <span class="font-mono text-xs font-bold text-brand-500 bg-brand-500/10 px-2 py-0.5 rounded border border-brand-500/20">${c.id}</span>
+                    <span class="text-xs text-slate-400 font-semibold">${c.category}</span>
+                    <span class="text-slate-600">•</span>
+                    <span class="text-xs text-slate-500">${c.date}</span>
+                  </div>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${c.status === 'RESOLVED' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">${c.status}</span>
+                </div>
+                <h4 class="font-bold text-sm text-white">${c.title}</h4>
+                <p class="text-xs text-slate-300 leading-relaxed bg-dark-surface p-3 rounded-xl border border-dark-border">${c.description}</p>
+                ${c.status === 'RESOLVED' ? `
+                  <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 space-y-1">
+                    <span class="font-bold uppercase tracking-wider text-[10px] text-emerald-400">Official Administrative Resolution:</span>
+                    <p>${c.resolution}</p>
+                  </div>
+                ` : ''}
+              </div>
+            `).join('')}
+            ${myTickets.length === 0 ? '<div class="text-center py-8 text-slate-500 text-xs italic">No tickets filed. Click above to submit a grievance.</div>' : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // ================= 2. PROFESSOR VIEW IMPLEMENTATIONS =================
+
+    function viewProfessorDashboard(container, user) {
+      const myCourses = APP_STATE.courses.filter(c => c.professorId === user.id);
+      const myEnrollments = APP_STATE.enrollments.filter(e => myCourses.some(c => c.code === e.courseCode) && e.active);
+      const gradedCount = myEnrollments.filter(e => e.grade !== null).length;
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-indigo-900/40 via-dark-card to-dark-card border border-brand-500/30 rounded-3xl p-6 shadow-xl space-y-2">
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand-500/20 text-brand-300 border border-brand-500/30">Faculty Instruction Terminal</span>
+            <h2 class="text-2xl font-extrabold text-white">Welcome, ${user.name}</h2>
+            <p class="text-slate-300 text-xs max-w-xl">You are managing ${myCourses.length} active lecture sections. Grade assignments automatically update student SGPA in real time.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-2">
+              <span class="text-slate-400 text-xs font-semibold">Assigned Sections</span>
+              <div class="text-3xl font-black font-mono text-white">${myCourses.length} Courses</div>
+              <div class="text-[11px] text-slate-400 font-mono">${myCourses.map(c => c.code).join(', ')}</div>
+            </div>
+
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-2">
+              <span class="text-slate-400 text-xs font-semibold">Enrolled Students</span>
+              <div class="text-3xl font-black font-mono text-emerald-400">${myEnrollments.length} Students</div>
+              <div class="text-[11px] text-slate-400">Across all assigned sections</div>
+            </div>
+
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-2">
+              <span class="text-slate-400 text-xs font-semibold">Grading Status</span>
+              <div class="text-3xl font-black font-mono text-amber-400">${gradedCount} / ${myEnrollments.length} Graded</div>
+              <div class="w-full bg-dark-bg rounded-full h-1.5 overflow-hidden">
+                <div class="bg-amber-400 h-1.5 rounded-full" style="width: ${myEnrollments.length ? (gradedCount/myEnrollments.length)*100 : 0}%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-extrabold text-sm text-white">Assigned Course Sections</h3>
+              <button onclick="activeTab='prof_gradebook'; renderSidebar(); renderMainView();" class="text-xs text-brand-500 font-bold hover:underline">Open Gradebook ➔</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              ${myCourses.map(c => {
+                const count = APP_STATE.enrollments.filter(e => e.courseCode === c.code && e.active).length;
+                return `
+                  <div class="p-4 rounded-xl bg-dark-surface border border-dark-border space-y-2">
+                    <div class="flex justify-between items-center">
+                      <span class="font-mono text-xs font-bold text-brand-500 bg-brand-500/10 px-2.5 py-0.5 rounded border border-brand-500/20">${c.code}</span>
+                      <span class="text-xs font-bold text-amber-400">${c.credits} Credits (Sem ${c.semester})</span>
+                    </div>
+                    <h4 class="font-bold text-sm text-white">${c.title}</h4>
+                    <p class="text-xs text-slate-400 line-clamp-2">${c.syllabus}</p>
+                    <div class="pt-2 text-xs text-slate-300 space-y-1">
+                      <div>⏰ Timing: <strong>${c.timing}</strong></div>
+                      <div>📍 Venue: <strong>${c.location}</strong></div>
+                      <div>👥 Enrollment: <strong class="text-emerald-400 font-mono">${count} / ${c.limit}</strong></div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function viewProfessorGradebook(container, user) {
+      const myCourses = APP_STATE.courses.filter(c => c.professorId === user.id);
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Course Gradebook & Student Assessments</h2>
+            <p class="text-slate-400 text-xs">Assign official letter grades (A+ to F). Submissions immediately recalculate student SGPA.</p>
+          </div>
+
+          ${myCourses.map(c => {
+            const enrollments = APP_STATE.enrollments.filter(e => e.courseCode === c.code && e.active);
+            return `
+              <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-3 shadow-md">
+                <div class="flex flex-wrap items-center justify-between pb-3 border-b border-dark-border gap-2">
+                  <div>
+                    <span class="font-mono text-xs font-bold text-brand-500 bg-brand-500/10 px-2 py-0.5 rounded border border-brand-500/20">${c.code}</span>
+                    <span class="font-extrabold text-base text-white ml-2">${c.title}</span>
+                    <span class="text-xs text-slate-400 ml-2">(${c.credits} Credits)</span>
+                  </div>
+                  <span class="text-xs font-mono text-slate-400 bg-dark-surface px-3 py-1 rounded-lg border border-dark-border">${enrollments.length} Enrolled Students</span>
+                </div>
+
+                <div class="space-y-2">
+                  ${enrollments.map(e => {
+                    const student = APP_STATE.users.find(u => u.id === e.studentId);
+                    return `
+                      <div class="flex flex-wrap items-center justify-between p-3.5 rounded-xl bg-dark-surface border border-dark-border hover:border-dark-borderLight transition gap-3">
+                        <div>
+                          <div class="font-bold text-sm text-white">${student ? student.name : 'Unknown'}</div>
+                          <div class="text-xs text-slate-400 font-mono mt-0.5">ID: ${e.studentId} • Semester ${student ? student.semester : 1}</div>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                          <span class="text-xs text-slate-400 font-medium">Assigned Grade:</span>
+                          <select onchange="handleGradeAssignment('${e.studentId}', '${c.code}', this.value)" class="bg-dark-bg border border-dark-borderLight text-white rounded-xl px-3 py-1.5 text-xs font-mono font-bold focus:border-brand-500 outline-none">
+                            <option value="" ${!e.grade ? 'selected' : ''}>-- Ungraded --</option>
+                            <option value="A+" ${e.grade && e.grade.letter === 'A+' ? 'selected' : ''}>A+ (10.0 pts)</option>
+                            <option value="A" ${e.grade && e.grade.letter === 'A' ? 'selected' : ''}>A (9.0 pts)</option>
+                            <option value="B+" ${e.grade && e.grade.letter === 'B+' ? 'selected' : ''}>B+ (8.0 pts)</option>
+                            <option value="B" ${e.grade && e.grade.letter === 'B' ? 'selected' : ''}>B (7.0 pts)</option>
+                            <option value="C" ${e.grade && e.grade.letter === 'C' ? 'selected' : ''}>C (6.0 pts)</option>
+                            <option value="D" ${e.grade && e.grade.letter === 'D' ? 'selected' : ''}>D (5.0 pts)</option>
+                            <option value="F" ${e.grade && e.grade.letter === 'F' ? 'selected' : ''}>F (0.0 pts)</option>
+                          </select>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                  ${enrollments.length === 0 ? '<div class="text-center py-6 text-slate-500 text-xs italic">No enrolled students in this section.</div>' : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function viewProfessorCurriculum(container, user) {
+      const myCourses = APP_STATE.courses.filter(c => c.professorId === user.id);
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Course Syllabus & Section Controls</h2>
+            <p class="text-slate-400 text-xs">Modify course schedules, lecture venues, and syllabus outlines.</p>
+          </div>
+
+          <div class="space-y-4">
+            ${myCourses.map(c => `
+              <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-4 shadow-md">
+                <div class="flex justify-between items-center pb-2 border-b border-dark-border">
+                  <span class="font-mono text-sm font-bold text-brand-500">${c.code} — ${c.title}</span>
+                  <span class="text-xs font-bold text-amber-400 font-mono">${c.credits} Credits (Sem ${c.semester})</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                  <div>
+                    <label class="text-slate-400 font-semibold">Classroom Timing:</label>
+                    <input type="text" id="prof-timing-${c.code}" value="${c.timing}" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white font-mono focus:border-brand-500 outline-none" />
+                  </div>
+                  <div>
+                    <label class="text-slate-400 font-semibold">Room Venue:</label>
+                    <input type="text" id="prof-loc-${c.code}" value="${c.location}" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white font-mono focus:border-brand-500 outline-none" />
+                  </div>
+                  <div>
+                    <label class="text-slate-400 font-semibold">Capacity Cap:</label>
+                    <input type="number" id="prof-limit-${c.code}" value="${c.limit}" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white font-mono focus:border-brand-500 outline-none" />
+                  </div>
+                </div>
+
+                <div class="text-xs">
+                  <label class="text-slate-400 font-semibold">Syllabus Overview:</label>
+                  <textarea id="prof-syl-${c.code}" rows="2" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white focus:border-brand-500 outline-none">${c.syllabus}</textarea>
+                </div>
+
+                <div class="text-right">
+                  <button onclick="saveProfessorSettings('${c.code}')" class="px-5 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold transition shadow-md shadow-brand-500/25">Update Section Settings</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ================= 3. ADMINISTRATOR VIEW IMPLEMENTATIONS =================
+
+    function viewAdminDashboard(container, user) {
+      const activeEnrollments = APP_STATE.enrollments.filter(e => e.active);
+      const pendingGrievances = APP_STATE.complaints.filter(c => c.status === "PENDING").length;
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="bg-gradient-to-r from-purple-900/40 via-dark-card to-dark-card border border-brand-500/30 rounded-3xl p-6 shadow-xl space-y-2">
+            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30">Executive Administration</span>
+            <h2 class="text-2xl font-extrabold text-white">Academic Affairs Oversight</h2>
+            <p class="text-slate-300 text-xs max-w-xl">Central management of university curriculum, faculty section assignments, student promotions, and institutional complaints.</p>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-4.5 space-y-2">
+              <span class="text-slate-400 text-xs font-semibold">Total Students</span>
+              <div class="text-3xl font-black font-mono text-white">${APP_STATE.users.filter(u => u.role === 'Student').length}</div>
+              <div class="text-[11px] text-slate-400">Registered on portal</div>
+            </div>
+
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-4.5 space-y-2">
+              <span class="text-slate-400 text-xs font-semibold">Faculty Members</span>
+              <div class="text-3xl font-black font-mono text-brand-500">${APP_STATE.users.filter(u => u.role === 'Professor').length}</div>
+              <div class="text-[11px] text-slate-400">Teaching active courses</div>
+            </div>
+
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-4.5 space-y-2">
+              <span class="text-slate-400 text-xs font-semibold">Active Seat Enrollments</span>
+              <div class="text-3xl font-black font-mono text-emerald-400">${activeEnrollments.length}</div>
+              <div class="text-[11px] text-slate-400">Live enrolled student units</div>
+            </div>
+
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-4.5 space-y-2">
+              <span class="text-slate-400 text-xs font-semibold">Open Grievances</span>
+              <div class="text-3xl font-black font-mono text-rose-400">${pendingGrievances} Tickets</div>
+              <div class="text-[11px] text-slate-400">Awaiting dean resolution</div>
+            </div>
+          </div>
+
+          <!-- Shortcuts & Management Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-3">
+              <h3 class="font-extrabold text-sm text-white">Curriculum Management</h3>
+              <p class="text-xs text-slate-400">Add new courses, configure prerequisites, assign professors, or remove legacy offerings.</p>
+              <button onclick="activeTab='admin_catalog'; renderSidebar(); renderMainView();" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold transition">Manage Course Catalog ➔</button>
+            </div>
+
+            <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-3">
+              <h3 class="font-extrabold text-sm text-white">Semester Finalization Wizard</h3>
+              <p class="text-xs text-slate-400">Audit all grades for student cohorts, compute official SGPA, and promote students to the next semester.</p>
+              <button onclick="activeTab='admin_promotion'; renderSidebar(); renderMainView();" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition">Open Promotion Wizard ➔</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function viewAdminCatalog(container, user) {
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-xl font-extrabold text-white">Master Course Catalog</h2>
+              <p class="text-slate-400 text-xs">University-wide catalog of all offerings, assigned professors, and capacity limits.</p>
+            </div>
+            <button onclick="openCourseModal()" class="px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-lg shadow-brand-500/25 transition">+ Create New Course</button>
+          </div>
+
+          <div class="bg-dark-card border border-dark-border rounded-2xl overflow-hidden shadow-md">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-dark-surface text-slate-400 border-b border-dark-border uppercase font-bold text-[10px] tracking-wider">
+                <tr>
+                  <th class="p-4">Code</th>
+                  <th class="p-4">Course Title</th>
+                  <th class="p-4">Credits</th>
+                  <th class="p-4">Semester</th>
+                  <th class="p-4">Instructor Assigned</th>
+                  <th class="p-4">Timing & Venue</th>
+                  <th class="p-4">Enrollment</th>
+                  <th class="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-dark-border">
+                ${APP_STATE.courses.map(c => {
+                  const prof = APP_STATE.users.find(u => u.id === c.professorId);
+                  const count = APP_STATE.enrollments.filter(e => e.courseCode === c.code && e.active).length;
+                  return `
+                    <tr class="hover:bg-dark-cardHover transition">
+                      <td class="p-4 font-mono font-bold text-brand-500">${c.code}</td>
+                      <td class="p-4 font-bold text-white">${c.title}</td>
+                      <td class="p-4 font-mono font-bold text-amber-400">${c.credits} Cr</td>
+                      <td class="p-4 text-slate-300">Sem ${c.semester}</td>
+                      <td class="p-4">
+                        <select onchange="handleAdminAssignProf('${c.code}', this.value)" class="bg-dark-bg border border-dark-borderLight text-white rounded-lg p-1.5 text-xs outline-none focus:border-brand-500">
+                          <option value="">-- Unassigned --</option>
+                          ${APP_STATE.users.filter(u => u.role === 'Professor').map(p => `
+                            <option value="${p.id}" ${c.professorId === p.id ? 'selected' : ''}>${p.name}</option>
+                          `).join('')}
+                        </select>
+                      </td>
+                      <td class="p-4 text-slate-300">${c.timing} (${c.location})</td>
+                      <td class="p-4 font-mono">${count} / ${c.limit}</td>
+                      <td class="p-4 text-right">
+                        <button onclick="handleDeleteCourseAction('${c.code}')" class="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-400 border border-rose-500/30 text-xs font-semibold transition">Delete</button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function viewAdminStudents(container, user) {
+      const students = APP_STATE.users.filter(u => u.role === "Student");
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Student Academic Registry</h2>
+            <p class="text-slate-400 text-xs">Directory of all active students, current semester progression, and prerequisites.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${students.map(s => {
+              const active = APP_STATE.enrollments.filter(e => e.studentId === s.id && e.active);
+              const gpaData = calculateGPA(s.id, s.semester);
+              return `
+                <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-3 shadow-md">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h3 class="font-extrabold text-sm text-white">${s.name}</h3>
+                      <div class="font-mono text-xs text-brand-500">${s.id} • ${s.email}</div>
+                    </div>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-500/10 text-brand-400 border border-brand-500/20">Sem ${s.semester}</span>
+                  </div>
+
+                  <div class="text-xs text-slate-300 space-y-1.5 pt-2 border-t border-dark-border">
+                    <div class="flex justify-between"><span class="text-slate-400">Major:</span> <span class="font-medium text-white">${s.major}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Active Units:</span> <span class="font-mono font-bold text-white">${active.length} Courses</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Passed Prerequisites:</span> <span class="font-mono text-cyan-400">${s.completedCourses.join(', ') || 'None'}</span></div>
+                    <div class="flex justify-between"><span class="text-slate-400">Standing SGPA:</span> <span class="font-mono font-bold text-emerald-400">${gpaData.sgpa >= 0 ? gpaData.sgpa.toFixed(2) : 'In Progress'}</span></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function viewAdminComplaints(container, user) {
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Student Grievances & Resolution Desk</h2>
+            <p class="text-slate-400 text-xs">Review pending student complaints and submit administrative resolutions.</p>
+          </div>
+
+          <div class="space-y-3">
+            ${APP_STATE.complaints.map(c => {
+              const student = APP_STATE.users.find(u => u.id === c.studentId);
+              return `
+                <div class="bg-dark-card border border-dark-border rounded-2xl p-5 space-y-3 shadow-md">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="font-mono text-xs font-bold text-brand-500 bg-brand-500/10 px-2 py-0.5 rounded border border-brand-500/20">${c.id}</span>
+                      <span class="font-bold text-sm text-white">${student ? student.name : 'Unknown'} (${c.studentId})</span>
+                      <span class="text-slate-500 text-xs">• ${c.date}</span>
+                    </div>
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${c.status === 'RESOLVED' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">${c.status}</span>
+                  </div>
+
+                  <p class="text-xs text-slate-200 bg-dark-surface p-3.5 rounded-xl border border-dark-border">${c.description}</p>
+
+                  ${c.status === 'RESOLVED' ? `
+                    <div class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
+                      <strong>Official Resolution:</strong> ${c.resolution}
+                    </div>
+                  ` : `
+                    <div class="flex items-center gap-2 pt-1">
+                      <input type="text" id="admin-res-${c.id}" placeholder="Type formal resolution details..." class="flex-1 bg-dark-surface border border-dark-border text-xs text-white rounded-xl p-2.5 outline-none focus:border-brand-500" />
+                      <button onclick="handleAdminResolveComplaint('${c.id}')" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-xl transition shadow-md shadow-emerald-600/30">Submit Resolution</button>
+                    </div>
+                  `}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function viewAdminPromotion(container, user) {
+      const students = APP_STATE.users.filter(u => u.role === "Student");
+
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-white">Finalize Semester & Cohort Promotion Wizard</h2>
+            <p class="text-slate-400 text-xs">Verify that all active courses have non-null grades, compute official SGPA, archive passed units into prerequisites, and promote students to Semester N+1.</p>
+          </div>
+
+          <div class="space-y-3">
+            ${students.map(s => {
+              const activeEnrollments = APP_STATE.enrollments.filter(e => e.studentId === s.id && e.active);
+              const allGraded = activeEnrollments.length > 0 && activeEnrollments.every(e => e.grade !== null);
+              const gpaData = calculateGPA(s.id, s.semester);
+
+              return `
+                <div class="bg-dark-card border border-dark-border rounded-2xl p-5 flex flex-wrap items-center justify-between gap-4 shadow-md">
+                  <div>
+                    <h3 class="font-extrabold text-base text-white">${s.name} <span class="font-mono text-xs text-brand-500">(${s.id})</span></h3>
+                    <div class="text-xs text-slate-400 mt-1">Current: <strong>Semester ${s.semester}</strong> • Active Enrollments: <strong>${activeEnrollments.length} Courses</strong></div>
+                    <div class="text-xs mt-1.5">
+                      Grading Status: ${allGraded ? '<span class="text-emerald-400 font-bold">✓ Complete: All Courses Graded</span>' : '<span class="text-amber-400 font-bold">⚠ Incomplete: Grades Pending in some courses</span>'}
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-4">
+                    <div class="text-right">
+                      <span class="text-slate-400 text-xs">Calculated SGPA:</span>
+                      <div class="font-mono font-bold text-lg text-emerald-400">${gpaData.sgpa >= 0 ? gpaData.sgpa.toFixed(2) : 'Pending'}</div>
+                    </div>
+                    <button onclick="handleAdminPromotion('${s.id}')" ${!allGraded ? 'disabled' : ''} class="px-5 py-2.5 rounded-xl font-bold text-xs transition ${allGraded ? 'bg-brand-600 hover:bg-brand-500 text-white shadow-lg shadow-brand-500/25' : 'bg-dark-surface text-slate-600 border border-dark-border cursor-not-allowed'}">
+                      Finalize & Advance to Sem ${s.semester + 1} ➔
+                    </button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ================= ACTIONS & VALIDATION LOGIC =================
+
+    // 1. Course Registration (The 6 Java rules)
+    function handleRegisterAction(courseCode) {
+      const student = getActiveUser();
+      const course = APP_STATE.courses.find(c => c.code === courseCode);
+      if (!course) return;
+
+      logDevEvent(`RegistrationService.registerCourse(Student ${student.id}, Course ${courseCode}) running 6 safety checks...`);
+
+      // Rule 1: Semester Check
+      if (course.semester !== student.semester) {
+        notifyToast(`Course belongs to Semester ${course.semester}, but you are in Semester ${student.semester}!`, "error");
+        logDevEvent(`[REJECTED] Semester mismatch: Course Sem ${course.semester} != Student Sem ${student.semester}`);
+        return;
+      }
+
+      // Rule 2: Duplicate Check
+      const isAlready = APP_STATE.enrollments.some(e => e.studentId === student.id && e.courseCode === courseCode && e.active);
+      if (isAlready) {
+        notifyToast("Already registered for this course!", "error");
+        logDevEvent(`[REJECTED] Duplicate enrollment check failed.`);
+        return;
+      }
+
+      // Rule 3: Prerequisite Check
+      for (let prereq of course.prerequisites) {
+        if (!student.completedCourses.includes(prereq)) {
+          notifyToast(`Prerequisite missing: You must complete ${prereq} first!`, "error");
+          logDevEvent(`[REJECTED] Prerequisite check failed: Missing ${prereq}`);
+          return;
+        }
+      }
+
+      // Rule 4: 20-Credit Limit Check
+      const myActive = APP_STATE.enrollments.filter(e => e.studentId === student.id && e.active);
+      const currentCredits = myActive.reduce((sum, e) => {
+        const c = APP_STATE.courses.find(item => item.code === e.courseCode);
+        return sum + (c ? c.credits : 0);
+      }, 0);
+
+      if (currentCredits + course.credits > 20) {
+        notifyToast(`Credit limit exceeded! Maximum is 20 credits. Current: ${currentCredits}, Adding: ${course.credits}`, "error");
+        logDevEvent(`[REJECTED] Credit limit breached (${currentCredits + course.credits} > 20)`);
+        return;
+      }
+
+      // Rule 5: Capacity Check
+      const count = APP_STATE.enrollments.filter(e => e.courseCode === courseCode && e.active).length;
+      if (count >= course.limit) {
+        notifyToast("Course enrollment limit reached!", "error");
+        logDevEvent(`[REJECTED] Capacity limit reached (${count}/${course.limit})`);
+        return;
+      }
+
+      // Rule 6: Schedule Clash Check
+      for (let e of myActive) {
+        const activeCourse = APP_STATE.courses.find(c => c.code === e.courseCode);
+        if (activeCourse && activeCourse.timing.toLowerCase() === course.timing.toLowerCase()) {
+          notifyToast(`Schedule clash detected with ${activeCourse.code} at ${course.timing}!`, "error");
+          logDevEvent(`[REJECTED] Schedule clash with ${activeCourse.code}`);
+          return;
+        }
+      }
+
+      // Success
+      APP_STATE.enrollments.push({
+        id: "E" + Date.now(),
+        studentId: student.id,
+        courseCode: course.code,
+        active: true,
+        grade: null,
+        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 16)
+      });
+
+      commitState(`[SUCCESS] Enrollment instantiated: new Enrollment(${student.id}, ${courseCode}). Active=true.`);
+      notifyToast(`Successfully registered in ${course.code} (${course.credits} Credits)!`, "success");
+
+      renderHeaderRibbon();
+      renderSidebar();
+      renderMainView();
+    }
+
+    // 2. Drop Course
+    function handleDropAction(courseCode) {
+      const student = getActiveUser();
+      const enrollment = APP_STATE.enrollments.find(e => e.studentId === student.id && e.courseCode === courseCode && e.active);
+      if (!enrollment) return;
+
+      enrollment.active = false;
+      commitState(`[SUCCESS] RegistrationService.dropCourse(): Enrollment for ${courseCode} marked active=false.`);
+      notifyToast(`Successfully dropped ${courseCode}. Credits refunded.`, "info");
+
+      renderHeaderRibbon();
+      renderSidebar();
+      renderMainView();
+    }
+
+    // 3. Assign Grade (Professor)
+    function handleGradeAssignment(studentId, courseCode, letter) {
+      const enrollment = APP_STATE.enrollments.find(e => e.studentId === studentId && e.courseCode === courseCode && e.active);
+      if (!enrollment) return;
+
+      if (!letter) {
+        enrollment.grade = null;
+        commitState(`[GRADE] Removed grade for ${studentId} in ${courseCode}`);
+        notifyToast("Grade reset.", "info");
+        return;
+      }
+
+      const pointsMap = { "A+": 10.0, "A": 9.0, "B+": 8.0, "B": 7.0, "C": 6.0, "D": 5.0, "F": 0.0 };
+      const points = pointsMap[letter] !== undefined ? pointsMap[letter] : 0;
+
+      enrollment.grade = { letter: letter, points: points };
+      commitState(`[GRADE] Assigned Grade ${letter} (${points} pts) to Student ${studentId} in ${courseCode}`);
+      notifyToast(`Grade ${letter} (${points} pts) recorded for ${studentId}!`, "success");
+
+      renderHeaderRibbon();
+      renderMainView();
+    }
+
+    // 4. Update Course Details (Professor)
+    function saveProfessorSettings(courseCode) {
+      const course = APP_STATE.courses.find(c => c.code === courseCode);
+      if (!course) return;
+
+      const timing = document.getElementById(`prof-timing-${courseCode}`).value;
+      const loc = document.getElementById(`prof-loc-${courseCode}`).value;
+      const limit = parseInt(document.getElementById(`prof-limit-${courseCode}`).value);
+      const syl = document.getElementById(`prof-syl-${courseCode}`).value;
+
+      course.timing = timing;
+      course.location = loc;
+      course.limit = limit;
+      course.syllabus = syl;
+
+      commitState(`[UPDATE] Professor updated schedule and syllabus for ${courseCode}`);
+      notifyToast(`Course settings updated for ${courseCode}!`, "success");
+      renderMainView();
+    }
+
+    // 5. Assign Professor (Admin)
+    function handleAdminAssignProf(courseCode, profId) {
+      const course = APP_STATE.courses.find(c => c.code === courseCode);
+      if (!course) return;
+
+      course.professorId = profId || null;
+      commitState(`[ADMIN] Assigned Professor ${profId || 'None'} to ${courseCode}`);
+      notifyToast(`Instructor assigned for ${courseCode}`, "success");
+      renderMainView();
+    }
+
+    // 6. Delete Course (Admin)
+    function handleDeleteCourseAction(courseCode) {
+      if (confirm(`Permanently remove course ${courseCode} from curriculum?`)) {
+        APP_STATE.courses = APP_STATE.courses.filter(c => c.code !== courseCode);
+        APP_STATE.enrollments = APP_STATE.enrollments.filter(e => e.courseCode !== courseCode);
+        commitState(`[ADMIN] Course ${courseCode} removed from catalog.`);
+        notifyToast(`Course ${courseCode} deleted.`, "info");
+        renderMainView();
+      }
+    }
+
+    // 7. Resolve Complaint (Admin)
+    function handleAdminResolveComplaint(complaintId) {
+      const comp = APP_STATE.complaints.find(c => c.id === complaintId);
+      if (!comp) return;
+
+      const input = document.getElementById(`admin-res-${complaintId}`);
+      if (!input || !input.value.trim()) {
+        notifyToast("Please provide resolution details!", "error");
+        return;
+      }
+
+      comp.status = "RESOLVED";
+      comp.resolution = input.value.trim();
+      commitState(`[COMPLAINT] Complaint ${complaintId} marked as RESOLVED.`);
+      notifyToast(`Grievance ${complaintId} resolved!`, "success");
+
+      renderHeaderRibbon();
+      renderMainView();
+    }
+
+    // 8. Finalize Semester & Promotion (Admin)
+    function handleAdminPromotion(studentId) {
+      const student = APP_STATE.users.find(u => u.id === studentId);
+      if (!student) return;
+
+      const activeEnrollments = APP_STATE.enrollments.filter(e => e.studentId === studentId && e.active);
+      const allGraded = activeEnrollments.length > 0 && activeEnrollments.every(e => e.grade !== null);
+
+      if (!allGraded) {
+        notifyToast("Cannot finalize: Ungraded courses remain!", "error");
+        return;
+      }
+
+      // Archive completed courses
+      activeEnrollments.forEach(e => {
+        if (!student.completedCourses.includes(e.courseCode)) {
+          student.completedCourses.push(e.courseCode);
+        }
+        e.active = false;
+      });
+
+      const oldSem = student.semester;
+      student.semester = oldSem + 1;
+
+      commitState(`[PROMOTION] Student ${studentId} completed Semester ${oldSem}. Promoted to Semester ${student.semester}!`);
+      notifyToast(`Student ${student.name} promoted to Semester ${student.semester}!`, "success");
+
+      renderHeaderRibbon();
+      renderSidebar();
+      renderMainView();
+    }
+
+    // 9. GPA Formula (GPAService)
+    function calculateGPA(studentId, semester) {
+      const activeEnrollments = APP_STATE.enrollments.filter(e => e.studentId === studentId && e.active);
+      if (activeEnrollments.length === 0) return { sgpa: -1, cgpa: -1 };
+
+      let totalPoints = 0;
+      let totalCredits = 0;
+      let hasUngraded = false;
+
+      activeEnrollments.forEach(e => {
+        const c = APP_STATE.courses.find(course => course.code === e.courseCode);
+        const credits = c ? c.credits : 0;
+
+        if (e.grade) {
+          totalPoints += e.grade.points * credits;
+          totalCredits += credits;
+        } else {
+          hasUngraded = true;
+        }
+      });
+
+      if (hasUngraded || totalCredits === 0) {
+        return { sgpa: -1, cgpa: -1 };
+      }
+
+      const gpa = totalPoints / totalCredits;
+      return { sgpa: gpa, cgpa: gpa };
+    }
+
+    // ================= MODALS =================
+    function openComplaintModal() {
+      const modal = document.getElementById("modal-wrapper");
+      const box = document.getElementById("modal-content");
+      const nextId = "TICK-" + (Math.floor(Math.random() * 800) + 100);
+
+      box.innerHTML = `
+        <div class="flex items-center justify-between pb-3 border-b border-dark-border">
+          <h3 class="font-extrabold text-base text-white">File New Grievance Ticket</h3>
+          <button onclick="closeModal()" class="text-slate-400 hover:text-white font-bold">✕</button>
+        </div>
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="text-slate-400 font-semibold">Ticket ID:</label>
+            <input type="text" id="modal-tick-id" value="${nextId}" readonly class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-brand-500 font-mono" />
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Category:</label>
+            <select id="modal-tick-cat" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white">
+              <option value="Timetable Clash">Timetable Schedule Clash</option>
+              <option value="Prerequisite Issue">Prerequisite Waiver Request</option>
+              <option value="Grading Discrepancy">Grade Re-Evaluation</option>
+              <option value="Administrative">General Administrative</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Subject / Title:</label>
+            <input type="text" id="modal-tick-title" placeholder="Brief summary of the issue..." class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white outline-none focus:border-brand-500" />
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Detailed Description:</label>
+            <textarea id="modal-tick-desc" rows="3" placeholder="Provide complete specifics for dean review..." class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white outline-none focus:border-brand-500"></textarea>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-dark-border">
+          <button onclick="closeModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-semibold">Cancel</button>
+          <button onclick="submitGrievance()" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-lg shadow-brand-500/25">Submit Ticket</button>
+        </div>
+      `;
+      modal.classList.remove("hidden");
+    }
+
+    function submitGrievance() {
+      const id = document.getElementById("modal-tick-id").value;
+      const cat = document.getElementById("modal-tick-cat").value;
+      const title = document.getElementById("modal-tick-title").value.trim();
+      const desc = document.getElementById("modal-tick-desc").value.trim();
+
+      if (!title || !desc) {
+        notifyToast("Please fill in both title and description!", "error");
+        return;
+      }
+
+      APP_STATE.complaints.push({
+        id: id,
+        studentId: currentUserId,
+        category: cat,
+        title: title,
+        description: desc,
+        status: "PENDING",
+        date: new Date().toISOString().split("T")[0],
+        priority: "NORMAL",
+        resolution: ""
+      });
+
+      commitState(`[COMPLAINT] Student ${currentUserId} submitted grievance ${id}`);
+      closeModal();
+      notifyToast("Ticket submitted to Dean of Academic Affairs!", "success");
+      renderMainView();
+    }
+
+    function openCourseModal() {
+      const modal = document.getElementById("modal-wrapper");
+      const box = document.getElementById("modal-content");
+
+      box.innerHTML = `
+        <div class="flex items-center justify-between pb-3 border-b border-dark-border">
+          <h3 class="font-extrabold text-base text-white">Create New Course Offering</h3>
+          <button onclick="closeModal()" class="text-slate-400 hover:text-white font-bold">✕</button>
+        </div>
+        <div class="grid grid-cols-2 gap-3 text-xs">
+          <div>
+            <label class="text-slate-400 font-semibold">Course Code:</label>
+            <input type="text" id="add-code" placeholder="CSE302" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white font-mono outline-none focus:border-brand-500" />
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Department:</label>
+            <input type="text" id="add-dept" placeholder="CSE" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white outline-none focus:border-brand-500" />
+          </div>
+          <div class="col-span-2">
+            <label class="text-slate-400 font-semibold">Course Title:</label>
+            <input type="text" id="add-title" placeholder="Artificial Intelligence & Machine Learning" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white outline-none focus:border-brand-500" />
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Credits (2 or 4):</label>
+            <select id="add-credits" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white font-mono">
+              <option value="4">4 Credits</option>
+              <option value="2">2 Credits</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Semester Level:</label>
+            <input type="number" id="add-sem" value="1" min="1" max="8" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white font-mono outline-none" />
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Schedule Time:</label>
+            <input type="text" id="add-timing" placeholder="Thu 11:00 - 12:00 PM" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white outline-none" />
+          </div>
+          <div>
+            <label class="text-slate-400 font-semibold">Classroom Venue:</label>
+            <input type="text" id="add-loc" placeholder="Tech Hall 301" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white outline-none" />
+          </div>
+          <div class="col-span-2">
+            <label class="text-slate-400 font-semibold">Assign Instructor:</label>
+            <select id="add-prof" class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white">
+              <option value="">-- Unassigned --</option>
+              ${APP_STATE.users.filter(u => u.role === 'Professor').map(p => `<option value="${p.id}">${p.name} (${p.department})</option>`).join('')}
+            </select>
+          </div>
+          <div class="col-span-2">
+            <label class="text-slate-400 font-semibold">Syllabus Overview:</label>
+            <textarea id="add-syl" rows="2" placeholder="Course outline, prerequisites and objectives..." class="mt-1 w-full bg-dark-surface border border-dark-border rounded-xl p-2.5 text-white outline-none focus:border-brand-500"></textarea>
+          </div>
+        </div>
+        <div class="flex justify-end gap-2 pt-3 border-t border-dark-border">
+          <button onclick="closeModal()" class="px-4 py-2 rounded-xl text-slate-400 hover:text-white text-xs font-semibold">Cancel</button>
+          <button onclick="submitNewCourseAction()" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-lg shadow-brand-500/25">Add to Curriculum</button>
+        </div>
+      `;
+      modal.classList.remove("hidden");
+    }
+
+    function submitNewCourseAction() {
+      const code = document.getElementById("add-code").value.trim().toUpperCase();
+      const title = document.getElementById("add-title").value.trim();
+      const dept = document.getElementById("add-dept").value.trim() || "CSE";
+      const credits = parseInt(document.getElementById("add-credits").value);
+      const sem = parseInt(document.getElementById("add-sem").value);
+      const timing = document.getElementById("add-timing").value.trim();
+      const loc = document.getElementById("add-loc").value.trim();
+      const profId = document.getElementById("add-prof").value || null;
+      const syl = document.getElementById("add-syl").value.trim();
+
+      if (!code || !title || !timing) {
+        notifyToast("Code, title, and timing are required!", "error");
+        return;
+      }
+
+      if (APP_STATE.courses.some(c => c.code === code)) {
+        notifyToast(`Course code ${code} is already in use!`, "error");
+        return;
+      }
+
+      APP_STATE.courses.push({
+        code: code,
+        title: title,
+        credits: credits,
+        semester: sem,
+        timing: timing,
+        location: loc || "Auditorium TBD",
+        limit: 60,
+        professorId: profId,
+        department: dept,
+        prerequisites: [],
+        syllabus: syl || "Course outline will be posted by the instructor."
+      });
+
+      commitState(`[ADMIN] Added new course offering: ${code} - ${title}`);
+      closeModal();
+      notifyToast(`Course ${code} added to master curriculum!`, "success");
+      renderHeaderRibbon();
+      renderMainView();
+    }
+
+    function openNotificationsModal() {
+      const modal = document.getElementById("modal-wrapper");
+      const box = document.getElementById("modal-content");
+
+      box.innerHTML = `
+        <div class="flex items-center justify-between pb-3 border-b border-dark-border">
+          <h3 class="font-extrabold text-base text-white">Campus Notifications</h3>
+          <button onclick="closeModal()" class="text-slate-400 hover:text-white font-bold">✕</button>
+        </div>
+        <div class="space-y-2.5">
+          ${APP_STATE.notifications.map(n => `
+            <div class="p-3.5 rounded-xl bg-dark-surface border border-dark-border flex items-start gap-3">
+              <span class="w-2 h-2 rounded-full bg-brand-500 mt-1.5 shrink-0"></span>
+              <div>
+                <h4 class="font-bold text-xs text-white">${n.title}</h4>
+                <span class="text-[10px] text-slate-500 font-mono">${n.time}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="text-right pt-2 border-t border-dark-border">
+          <button onclick="closeModal()" class="px-4 py-1.5 bg-dark-surface text-slate-300 rounded-xl text-xs font-semibold">Dismiss</button>
+        </div>
+      `;
+      modal.classList.remove("hidden");
+    }
+
+    function closeModal() {
+      document.getElementById("modal-wrapper").classList.add("hidden");
+    }
+
+    // Launch Application
+    switchUser("S001");
+  </script>
+</body>
+</html>
